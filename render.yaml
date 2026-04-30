@@ -33,10 +33,7 @@ services:
       - key: GEMINI_API_KEY
         sync: false
       - key: BACKEND_URL
-        fromService:
-          type: web
-          name: smart-academic-backend
-          property: url
+        sync: false
       - key: PORT
         value: 10000
       - key: FLASK_ENV
