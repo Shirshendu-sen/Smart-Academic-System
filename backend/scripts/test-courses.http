@@ -1,0 +1,236 @@
+### Course API Tests
+# This file contains HTTP requests to test the course, lesson, and enrollment APIs
+# Prerequisites: 
+# 1. Run the backend server (npm run dev)
+# 2. Run database migrations (npx prisma migrate dev)
+# 3. Update tokens below with actual tokens from login
+
+### Variables
+@baseUrl = http://localhost:3001/api
+@studentToken = YOUR_STUDENT_TOKEN_HERE
+@instructorToken = YOUR_INSTRUCTOR_TOKEN_HERE
+@adminToken = YOUR_ADMIN_TOKEN_HERE
+
+### 1. COURSE TESTS
+
+### Get all published courses (public)
+GET {{baseUrl}}/courses
+
+### Get all published courses with search
+GET {{baseUrl}}/courses?search=javascript
+
+### Get all published courses with pagination
+GET {{baseUrl}}/courses?page=1&limit=10
+
+### Get single course by ID (public if published)
+GET {{baseUrl}}/courses/1
+
+### Create a new course (instructors only)
+POST {{baseUrl}}/courses
+Content-Type: application/json
+Authorization: Bearer {{instructorToken}}
+
+{
+  "title": "Introduction to Node.js",
+  "description": "Learn Node.js from scratch with practical examples",
+  "thumbnailUrl": "https://example.com/nodejs-thumbnail.jpg"
+}
+
+### Update a course (instructor who owns it or admin)
+PUT {{baseUrl}}/courses/1
+Content-Type: application/json
+Authorization: Bearer {{instructorToken}}
+
+{
+  "title": "Advanced Node.js Development",
+  "description": "Updated description with more advanced topics",
+  "isPublished": true
+}
+
+### Delete a course (instructor who owns it or admin)
+DELETE {{baseUrl}}/courses/1
+Authorization: Bearer {{instructorToken}}
+
+### Get courses created by current instructor
+GET {{baseUrl}}/courses/instructor/my-courses
+Authorization: Bearer {{instructorToken}}
+
+### 2. LESSON TESTS
+
+### Get all lessons for a course (public if course is published)
+GET {{baseUrl}}/lessons/courses/1/lessons
+
+### Get single lesson by ID
+GET {{baseUrl}}/lessons/1
+
+### Create a new lesson (instructors only)
+POST {{baseUrl}}/lessons/courses/1/lessons
+Content-Type: application/json
+Authorization: Bearer {{instructorToken}}
+
+{
+  "title": "Introduction to Express.js",
+  "content": "Express.js is a minimal and flexible Node.js web application framework...",
+  "videoUrl": "https://example.com/express-video.mp4",
+  "orderIndex": 1
+}
+
+### Update a lesson (instructors only)
+PUT {{baseUrl}}/lessons/1
+Content-Type: application/json
+Authorization: Bearer {{instructorToken}}
+
+{
+  "title": "Express.js Middleware Deep Dive",
+  "content": "Updated content about middleware in Express.js..."
+}
+
+### Delete a lesson (instructors only)
+DELETE {{baseUrl}}/lessons/1
+Authorization: Bearer {{instructorToken}}
+
+### Get lesson progress for authenticated student
+GET {{baseUrl}}/lessons/1/progress
+Authorization: Bearer {{studentToken}}
+
+### Mark lesson as completed
+POST {{baseUrl}}/lessons/1/complete
+Authorization: Bearer {{studentToken}}
+
+### 3. ENROLLMENT TESTS
+
+### Get student's own enrollments
+GET {{baseUrl}}/enrollments/my-enrollments
+Authorization: Bearer {{studentToken}}
+
+### Get all enrollments for a course (instructor/admin only)
+GET {{baseUrl}}/enrollments/courses/1/enrollments
+Authorization: Bearer {{instructorToken}}
+
+### Enroll in a course (students only)
+POST {{baseUrl}}/enrollments/courses/1/enroll
+Authorization: Bearer {{studentToken}}
+
+### Check enrollment status for a course
+GET {{baseUrl}}/enrollments/courses/1/status
+Authorization: Bearer {{studentToken}}
+
+### Get course progress for enrolled student
+GET {{baseUrl}}/enrollments/courses/1/progress
+Authorization: Bearer {{studentToken}}
+
+### Unenroll from a course (students only)
+DELETE {{baseUrl}}/enrollments/courses/1/unenroll
+Authorization: Bearer {{studentToken}}
+
+### 4. COMPREHENSIVE TEST SCENARIO
+
+### Scenario: Complete student learning flow
+# 1. Student browses courses
+GET {{baseUrl}}/courses
+
+# 2. Student enrolls in a course
+POST {{baseUrl}}/enrollments/courses/1/enroll
+Authorization: Bearer {{studentToken}}
+
+# 3. Student checks enrollment status
+GET {{baseUrl}}/enrollments/courses/1/status
+Authorization: Bearer {{studentToken}}
+
+# 4. Student views course lessons
+GET {{baseUrl}}/lessons/courses/1/lessons
+
+# 5. Student views a specific lesson
+GET {{baseUrl}}/lessons/1
+Authorization: Bearer {{studentToken}}
+
+# 6. Student marks lesson as completed
+POST {{baseUrl}}/lessons/1/complete
+Authorization: Bearer {{studentToken}}
+
+# 7. Student checks lesson progress
+GET {{baseUrl}}/lessons/1/progress
+Authorization: Bearer {{studentToken}}
+
+# 8. Student checks overall course progress
+GET {{baseUrl}}/enrollments/courses/1/progress
+Authorization: Bearer {{studentToken}}
+
+### Scenario: Instructor course management flow
+# 1. Instructor creates a course
+POST {{baseUrl}}/courses
+Content-Type: application/json
+Authorization: Bearer {{instructorToken}}
+
+{
+  "title": "New Course Title",
+  "description": "Course description here",
+  "thumbnailUrl": "https://example.com/thumbnail.jpg"
+}
+
+# 2. Instructor adds lessons to the course
+POST {{baseUrl}}/lessons/courses/2/lessons
+Content-Type: application/json
+Authorization: Bearer {{instructorToken}}
+
+{
+  "title": "Lesson 1: Introduction",
+  "content": "Lesson content here...",
+  "orderIndex": 1
+}
+
+# 3. Instructor publishes the course
+PUT {{baseUrl}}/courses/2
+Content-Type: application/json
+Authorization: Bearer {{instructorToken}}
+
+{
+  "isPublished": true
+}
+
+# 4. Instructor views their courses
+GET {{baseUrl}}/courses/instructor/my-courses
+Authorization: Bearer {{instructorToken}}
+
+# 5. Instructor views enrollments for their course
+GET {{baseUrl}}/enrollments/courses/2/enrollments
+Authorization: Bearer {{instructorToken}}
+
+### 5. ERROR HANDLING TESTS
+
+### Try to create course without authentication
+POST {{baseUrl}}/courses
+Content-Type: application/json
+
+{
+  "title": "Should Fail"
+}
+
+### Try to create course as student (should fail)
+POST {{baseUrl}}/courses
+Content-Type: application/json
+Authorization: Bearer {{studentToken}}
+
+{
+  "title": "Student Trying to Create Course"
+}
+
+### Try to update course you don't own
+PUT {{baseUrl}}/courses/1
+Content-Type: application/json
+Authorization: Bearer {{instructorToken}}
+
+{
+  "title": "Trying to Update Someone Else's Course"
+}
+
+### Try to enroll in unpublished course
+POST {{baseUrl}}/enrollments/courses/999/enroll
+Authorization: Bearer {{studentToken}}
+
+### Try to view unpublished course lessons without permission
+GET {{baseUrl}}/lessons/courses/999/lessons
+
+### Try to mark lesson as completed without enrollment
+POST {{baseUrl}}/lessons/999/complete
+Authorization: Bearer {{studentToken}}
