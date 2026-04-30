@@ -1,0 +1,46 @@
+# Render Blueprint for Smart Academic Platform
+# This file defines all services for deployment on Render
+
+services:
+  # Backend API Service (Node.js/Express)
+  - type: web
+    name: smart-academic-backend
+    env: node
+    rootDir: backend
+    buildCommand: npm install && npm run build
+    startCommand: npm start
+    envVars:
+      - key: DATABASE_URL
+        sync: false
+      - key: JWT_SECRET
+        generateValue: true
+      - key: NODE_ENV
+        value: production
+      - key: PORT
+        value: 10000
+    healthCheckPath: /health
+    autoDeploy: true
+    plan: free
+
+  # AI Service (Python/Flask)
+  - type: web
+    name: smart-academic-ai
+    env: python
+    rootDir: ai-service
+    buildCommand: pip install -r requirements.txt
+    startCommand: gunicorn --bind 0.0.0.0:$PORT app:app
+    envVars:
+      - key: GEMINI_API_KEY
+        sync: false
+      - key: BACKEND_URL
+        fromService:
+          type: web
+          name: smart-academic-backend
+          property: url
+      - key: PORT
+        value: 10000
+      - key: FLASK_ENV
+        value: production
+    healthCheckPath: /health
+    autoDeploy: true
+    plan: free

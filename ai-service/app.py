@@ -13,6 +13,16 @@ CORS(app)
 genai.configure(api_key=os.getenv("GEMINI_API_KEY"))
 model = genai.GenerativeModel('gemini-pro')
 
+# Health check endpoint
+@app.route('/health', methods=['GET'])
+def health_check():
+    return jsonify({
+        'status': 'AI Service is running',
+        'timestamp': os.getenv('FLASK_ENV', 'development'),
+        'service': 'smart-lms-ai-service',
+        'version': '1.0.0'
+    }), 200
+
 
 # ─── FEATURE 1: AI QUIZ GENERATOR ───────────────────────────────────────────
 @app.route('/generate-quiz', methods=['POST'])
