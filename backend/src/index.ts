@@ -5,7 +5,7 @@ import authRoutes from './routes/auth';
 import courseRoutes from './routes/courses';
 import lessonRoutes from './routes/lessons';
 import enrollmentRoutes from './routes/enrollments';
-import { authenticate, requireAdmin } from './middleware/auth';
+import { authenticate, requireAdmin, AuthRequest } from './middleware/auth';
 
 // Load environment variables
 dotenv.config();
@@ -50,7 +50,7 @@ app.get('/api/admin/stats', authenticate, requireAdmin, (req, res) => {
 });
 
 // Protected user route example
-app.get('/api/user/dashboard', authenticate, (req, res) => {
+app.get('/api/user/dashboard', authenticate, (req: AuthRequest, res) => {
   res.json({
     message: 'User dashboard',
     userId: req.user?.userId,

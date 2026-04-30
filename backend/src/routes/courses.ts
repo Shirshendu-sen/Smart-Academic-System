@@ -70,7 +70,7 @@ router.get('/', async (req, res) => {
 });
 
 // GET single course by ID (public)
-router.get('/:id', async (req, res) => {
+router.get('/:id', async (req: AuthRequest, res) => {
   try {
     const courseId = parseInt(req.params.id);
     
