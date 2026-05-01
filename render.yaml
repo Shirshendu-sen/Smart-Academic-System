@@ -9,6 +9,7 @@ services:
     rootDir: ./backend
     buildCommand: npm install && npm run build
     startCommand: npm start
+    postDeployCommand: npx prisma migrate deploy
     envVars:
       - key: DATABASE_URL
         sync: false
@@ -16,8 +17,8 @@ services:
         generateValue: true
       - key: NODE_ENV
         value: production
-      - key: PORT
-        value: 10000
+      - key: FRONTEND_URL
+        sync: false
     healthCheckPath: /health
     autoDeploy: true
     plan: free
@@ -33,9 +34,9 @@ services:
       - key: GEMINI_API_KEY
         sync: false
       - key: BACKEND_URL
-        sync: false
-      - key: PORT
-        value: 10000
+        fromService:
+          name: smart-academic-backend
+          property: url
       - key: FLASK_ENV
         value: production
     healthCheckPath: /health

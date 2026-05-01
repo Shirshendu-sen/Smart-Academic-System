@@ -11,16 +11,21 @@ router.get('/', async (req, res) => {
   try {
     const { page = '1', limit = '20', search = '' } = req.query;
     
-    const pageNum = parseInt(page as string) || 1;
-    const limitNum = parseInt(limit as string) || 20;
+    // Validate pagination parameters
+    const pageNum = Math.max(1, parseInt(page as string) || 1);
+    const limitNum = Math.min(100, Math.max(1, parseInt(limit as string) || 20));
     const skip = (pageNum - 1) * limitNum;
     
-    const where: any = { isPublished: true };
+    // Build where clause with proper typing
+    const where: { isPublished: boolean; OR?: Array<{ title?: { contains: string; mode: 'insensitive' }; description?: { contains: string; mode: 'insensitive' } }> } = {
+      isPublished: true
+    };
     
-    if (search) {
+    if (search && typeof search === 'string' && search.trim()) {
+      const searchTerm = search.trim();
       where.OR = [
-        { title: { contains: search as string, mode: 'insensitive' } },
-        { description: { contains: search as string, mode: 'insensitive' } },
+        { title: { contains: searchTerm, mode: 'insensitive' } },
+        { description: { contains: searchTerm, mode: 'insensitive' } },
       ];
     }
     
@@ -29,14 +34,14 @@ router.get('/', async (req, res) => {
         where,
         skip,
         take: limitNum,
-        include: { 
-          instructor: { 
-            select: { 
-              id: true, 
-              name: true, 
+        include: {
+          instructor: {
+            select: {
+              id: true,
+              name: true,
               email: true,
-              avatarUrl: true 
-            } 
+              avatarUrl: true
+            }
           },
           _count: {
             select: {
@@ -62,9 +67,9 @@ router.get('/', async (req, res) => {
     });
   } catch (error) {
     console.error('Get courses error:', error);
-    res.status(500).json({ 
+    res.status(500).json({
       success: false,
-      error: 'Internal server error' 
+      error: 'Internal server error'
     });
   }
 });
@@ -73,17 +78,23 @@ router.get('/', async (req, res) => {
 router.get('/:id', async (req: AuthRequest, res) => {
   try {
     const courseId = parseInt(req.params.id);
+    if (isNaN(courseId) || courseId <= 0) {
+      return res.status(400).json({
+        success: false,
+        error: 'Invalid course ID'
+      });
+    }
     
     const course = await prisma.course.findUnique({
       where: { id: courseId },
-      include: { 
-        instructor: { 
-          select: { 
-            id: true, 
-            name: true, 
+      include: {
+        instructor: {
+          select: {
+            id: true,
+            name: true,
             email: true,
-            avatarUrl: true 
-          } 
+            avatarUrl: true
+          }
         },
         lessons: {
           where: { courseId },
@@ -105,17 +116,17 @@ router.get('/:id', async (req: AuthRequest, res) => {
     });
     
     if (!course) {
-      return res.status(404).json({ 
+      return res.status(404).json({
         success: false,
-        error: 'Course not found' 
+        error: 'Course not found'
       });
     }
     
     // Only return published courses to non-owners
     if (!course.isPublished && (!req.user || req.user.userId !== course.instructorId)) {
-      return res.status(403).json({ 
+      return res.status(403).json({
         success: false,
-        error: 'Course is not published' 
+        error: 'Course is not published'
       });
     }
     
@@ -125,9 +136,9 @@ router.get('/:id', async (req: AuthRequest, res) => {
     });
   } catch (error) {
     console.error('Get course error:', error);
-    res.status(500).json({ 
+    res.status(500).json({
       success: false,
-      error: 'Internal server error' 
+      error: 'Internal server error'
     });
   }
 });
