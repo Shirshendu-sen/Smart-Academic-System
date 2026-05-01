@@ -187,7 +187,7 @@ router.post('/courses/:courseId/lessons', authenticate, requireInstructorOrAdmin
       data: {
         ...lessonData,
         courseId
-      },
+      } as any,
       include: {
         course: {
           select: {

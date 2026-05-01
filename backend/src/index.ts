@@ -1,4 +1,4 @@
-import express from 'express';
+import express, { Request, Response } from 'express';
 import cors from 'cors';
 import dotenv from 'dotenv';
 import authRoutes from './routes/auth';
@@ -22,7 +22,7 @@ app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
 // Health check endpoint
-app.get('/health', (req, res) => {
+app.get('/health', (req: Request, res: Response) => {
   res.json({
     status: 'ok',
     timestamp: new Date().toISOString(),
@@ -38,7 +38,7 @@ app.use('/api/lessons', lessonRoutes);
 app.use('/api/enrollments', enrollmentRoutes);
 
 // Protected admin route example
-app.get('/api/admin/stats', authenticate, requireAdmin, (req, res) => {
+app.get('/api/admin/stats', authenticate, requireAdmin, (req: AuthRequest, res: Response) => {
   res.json({
     message: 'Admin statistics',
     data: {
@@ -50,7 +50,7 @@ app.get('/api/admin/stats', authenticate, requireAdmin, (req, res) => {
 });
 
 // Protected user route example
-app.get('/api/user/dashboard', authenticate, (req: AuthRequest, res) => {
+app.get('/api/user/dashboard', authenticate, (req: AuthRequest, res: Response) => {
   res.json({
     message: 'User dashboard',
     userId: req.user?.userId,
@@ -64,7 +64,7 @@ app.get('/api/user/dashboard', authenticate, (req: AuthRequest, res) => {
 });
 
 // 404 handler
-app.use('*', (req, res) => {
+app.use('*', (req: Request, res: Response) => {
   res.status(404).json({
     error: 'Route not found',
     path: req.originalUrl,
@@ -72,7 +72,7 @@ app.use('*', (req, res) => {
 });
 
 // Error handling middleware
-app.use((err: any, req: express.Request, res: express.Response, next: express.NextFunction) => {
+app.use((err: any, req: Request, res: Response, next: express.NextFunction) => {
   console.error('Server error:', err);
   
   const statusCode = err.statusCode || 500;
