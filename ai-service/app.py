@@ -28,8 +28,29 @@ if not GEMINI_API_KEY:
 # Configure Gemini
 try:
     genai.configure(api_key=GEMINI_API_KEY)
-    model = genai.GenerativeModel('gemini-pro')
-    logger.info("Gemini AI model configured successfully")
+    
+    # Try different model names since the API version may affect availability
+    model_names = [
+        'gemini-pro',  # Original name
+        'models/gemini-pro',  # Full path
+        'gemini-1.0-pro',  # Newer name
+        'gemini-1.5-pro',  # Latest pro model
+        'gemini-1.5-flash',  # Faster model
+    ]
+    
+    model = None
+    for model_name in model_names:
+        try:
+            model = genai.GenerativeModel(model_name)
+            logger.info(f"Gemini AI model configured successfully with {model_name}")
+            break
+        except Exception as e:
+            logger.warning(f"Failed to configure model {model_name}: {e}")
+            continue
+    
+    if model is None:
+        raise Exception("Could not configure any Gemini model")
+        
 except Exception as e:
     logger.error(f"Failed to configure Gemini: {e}")
     model = None
