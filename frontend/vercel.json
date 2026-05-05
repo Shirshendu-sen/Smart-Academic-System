@@ -1,0 +1,13 @@
+{
+  "version": 2,
+  "buildCommand": "npm run build",
+  "devCommand": "npm run dev",
+  "installCommand": "npm install",
+  "outputDirectory": ".next",
+  "framework": "nextjs",
+  "regions": ["sin1"],
+  "env": {
+    "NEXT_PUBLIC_API_URL": "https://smart-academic-backend.onrender.com",
+    "NEXT_PUBLIC_AI_SERVICE_URL": "https://smart-academic-ai.onrender.com"
+  }
+}

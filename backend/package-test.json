@@ -1,0 +1,9 @@
+{
+  "scripts": {
+    "test:db": "ts-node scripts/test-db.ts",
+    "db:migrate": "npx prisma migrate dev --name init",
+    "db:generate": "npx prisma generate",
+    "db:studio": "npx prisma studio",
+    "db:reset": "npx prisma migrate reset"
+  }
+}

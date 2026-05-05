@@ -1,0 +1,94 @@
+### Health Check
+GET http://localhost:3001/health
+
+### Register a new student
+POST http://localhost:3001/api/auth/register
+Content-Type: application/json
+
+{
+  "name": "John Doe",
+  "email": "john@example.com",
+  "password": "password123",
+  "role": "student"
+}
+
+### Register an instructor
+POST http://localhost:3001/api/auth/register
+Content-Type: application/json
+
+{
+  "name": "Dr. Smith",
+  "email": "smith@example.com",
+  "password": "password123",
+  "role": "instructor"
+}
+
+### Register an admin
+POST http://localhost:3001/api/auth/register
+Content-Type: application/json
+
+{
+  "name": "Admin User",
+  "email": "admin@example.com",
+  "password": "password123",
+  "role": "admin"
+}
+
+### Login with student credentials
+POST http://localhost:3001/api/auth/login
+Content-Type: application/json
+
+{
+  "email": "john@example.com",
+  "password": "password123"
+}
+
+### Save token from login response
+@studentToken = {{login.response.body.token}}
+
+### Get current user profile (protected)
+GET http://localhost:3001/api/auth/me
+Authorization: Bearer {{studentToken}}
+
+### Test user dashboard (protected)
+GET http://localhost:3001/api/user/dashboard
+Authorization: Bearer {{studentToken}}
+
+### Test admin stats (should fail for student)
+GET http://localhost:3001/api/admin/stats
+Authorization: Bearer {{studentToken}}
+
+### Login with admin credentials
+POST http://localhost:3001/api/auth/login
+Content-Type: application/json
+
+{
+  "email": "admin@example.com",
+  "password": "password123"
+}
+
+### Save admin token
+@adminToken = {{login.response.body.token}}
+
+### Test admin stats (should succeed)
+GET http://localhost:3001/api/admin/stats
+Authorization: Bearer {{adminToken}}
+
+### Test invalid login
+POST http://localhost:3001/api/auth/login
+Content-Type: application/json
+
+{
+  "email": "nonexistent@example.com",
+  "password": "wrongpassword"
+}
+
+### Test validation errors (short password)
+POST http://localhost:3001/api/auth/register
+Content-Type: application/json
+
+{
+  "name": "Test",
+  "email": "invalid-email",
+  "password": "123"
+}
